@@ -73,9 +73,9 @@ namespace CSE3153_Project
                     connection.Open();
                 return true;
             }
-            catch
+            catch(Exception ex)
             {
-                Console.WriteLine("Database not found");
+                Console.WriteLine(ex.Message);
                 return false;
             }    
         }
@@ -120,6 +120,7 @@ namespace CSE3153_Project
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
+                Console.WriteLine();
             }
         }
 
@@ -192,9 +193,16 @@ namespace CSE3153_Project
                     }
                 }
             }
+            catch (SqlException ex) when (ex.Number == 547)
+            {
+                Console.WriteLine("The Department ID does not exist, please enter a valid department ID");
+                Console.WriteLine("Current Department ID's: 1, 2, 3, 4");
+                Console.WriteLine();
+            }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
+                Console.WriteLine();
             }
         }
 
@@ -246,13 +254,18 @@ namespace CSE3153_Project
                         if (r > 0)
                             Console.WriteLine("Department budget updated");
                         else
-                            Console.WriteLine("Department Id not found");
+                        {
+                            Console.WriteLine("Department ID not found");
+                            Console.WriteLine("Current Department ID's: 1, 2, 3, 4");
+                        }
+                        Console.WriteLine();
                     }
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
+                Console.WriteLine();
             }
         }
 
@@ -288,15 +301,17 @@ namespace CSE3153_Project
 
                         //success check
                         if(r > 0) 
-                            Console.WriteLine("Employee deleted"); 
-                         else
-                            Console.WriteLine("Employee Id not found"); 
+                            Console.WriteLine("Employee deleted");
+                        else
+                            Console.WriteLine("Employee ID not found");
+                        Console.WriteLine();
                     }
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
+                Console.WriteLine();
             }
         }
 
@@ -337,6 +352,7 @@ namespace CSE3153_Project
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
+                Console.WriteLine();
             }
         }
 
