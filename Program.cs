@@ -22,14 +22,15 @@ namespace CSE3153_Project
                 Console.WriteLine();
                 Console.WriteLine("----------Main Menu----------");
                 Console.WriteLine("1. View Employees (SELECT)");
-                Console.WriteLine("2. Add New Merchandis (INSERT)");
+                Console.WriteLine("2. Add New Merchandise (INSERT)");
                 Console.WriteLine("3. Update Department Budget (UPDATE)");
                 Console.WriteLine("4. Remove Employee (DELETE)");
-                Console.WriteLine("5. (Query)");
+                Console.WriteLine("5. View Event Locations (Join Query)");
                 Console.WriteLine("6. Exit Program");
                 Console.WriteLine();
                 Console.Write("Enter option number: ");
 
+                //get menu input
                 if (!int.TryParse(Console.ReadLine(), out int selectedOption))
                 {
                     Console.WriteLine("Input not a number");
@@ -51,7 +52,7 @@ namespace CSE3153_Project
                         DeleteRow();
                         break;
                     case 5:
-                        Query();
+                        JoinQuery();
                         break;
                     case 6:
                         Exit();
@@ -65,6 +66,7 @@ namespace CSE3153_Project
 
         static bool CheckConnection(string connectionString)
         {
+            //catch error to determine if database can be reached
             try
             {
                 using (SqlConnection connection = new SqlConnection(ConnectionString))
@@ -98,7 +100,7 @@ namespace CSE3153_Project
                 {
                     connection.Open();
 
-                    string query = $"SELECT * FROM company.Employee;";
+                    string query = "SELECT * FROM company.Employee;";
 
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
@@ -126,9 +128,11 @@ namespace CSE3153_Project
             Console.WriteLine("Add New Merchandise (INSERT)  Selected");
             try
             {
+                //get name
                 Console.Write("Enter item name: ");
                 string itemName = Console.ReadLine() ?? "";
 
+                //get cost
                 double cost;
                 while (true)
                 {
@@ -137,9 +141,10 @@ namespace CSE3153_Project
                     if (double.TryParse(Console.ReadLine(), out cost))
                         break;
 
-                    Console.WriteLine("invalid input");
+                    Console.WriteLine("Invalid input");
                 }
 
+                //get price
                 double price;
                 while (true)
                 {
@@ -148,9 +153,10 @@ namespace CSE3153_Project
                     if (double.TryParse(Console.ReadLine(), out price))
                         break;
 
-                    Console.WriteLine("invalid input");
+                    Console.WriteLine("Invalid input");
                 }
 
+                //get dept id
                 int deptId;
                 while (true)
                 {
@@ -159,23 +165,30 @@ namespace CSE3153_Project
                     if (int.TryParse(Console.ReadLine(), out deptId))
                         break;
 
-                    Console.WriteLine("invalid input");
+                    Console.WriteLine("Invalid input");
                 }
 
-
+                //create row using input
                 using (SqlConnection connection = new SqlConnection(ConnectionString))
                 {
                     connection.Open();
 
-                    string query = $"INSERT INTO company.Merchandise (item_name, cost, price, dept_id) VALUES (@itemName, @cost, @price, @deptId);";
+                    string query = "INSERT INTO company.Merchandise (item_name, cost, price, dept_id) VALUES (@itemName, @cost, @price, @deptId);";
 
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
+                        //attrach inptus
                         command.Parameters.AddWithValue("@itemName", itemName);
                         command.Parameters.AddWithValue("@cost", cost);
                         command.Parameters.AddWithValue("@price", price);
                         command.Parameters.AddWithValue("@deptId", deptId);
-                        command.ExecuteNonQuery();
+                        int r = command.ExecuteNonQuery();
+
+                        //success check
+                        if (r > 0)
+                            Console.WriteLine("Merchandise added");
+                        else 
+                            Console.WriteLine("Failed to add merchandise");
                     }
                 }
             }
@@ -188,16 +201,143 @@ namespace CSE3153_Project
         static void UpdateRow()
         {
             Console.WriteLine("Update Department Budget (UPDATE)  Selected");
+            try
+            {
+                //get dept id
+                int id;
+                while (true)
+                {
+                    Console.Write("Enter department Id: ");
+
+                    if (int.TryParse(Console.ReadLine(), out id))
+                        break;
+
+                    Console.WriteLine("Invalid input");
+                }
+
+                //get budget
+                int budget;
+                while (true)
+                {
+                    Console.Write("Enter new budget: ");
+
+                    if (int.TryParse(Console.ReadLine(), out budget))
+                        break;
+
+                    Console.WriteLine("Invalid input");
+                }
+
+                //sql update to department using input
+                using (SqlConnection connection = new SqlConnection(ConnectionString))
+                {
+                    connection.Open();
+
+                    string query = "UPDATE company.Department SET budget = @budget WHERE dept_id = @id;";
+
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {                   
+                        //attach inputs
+                        command.Parameters.AddWithValue("@id", id);
+                        command.Parameters.AddWithValue("@budget", budget);
+
+                        int r = command.ExecuteNonQuery();
+
+                        //success check
+                        if (r > 0)
+                            Console.WriteLine("Department budget updated");
+                        else
+                            Console.WriteLine("Department Id not found");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
 
         static void DeleteRow()
         {
             Console.WriteLine("Remove Employee (DELETE)  Selected");
+            try
+            {
+                //get employee id to delete
+                int id;
+                while (true)
+                {
+                    Console.Write("Enter the employee Id to delete: ");
+
+                    if (int.TryParse(Console.ReadLine(), out id))
+                        break;
+
+                    Console.WriteLine("Invalid input");
+                }
+
+                //sql to delete employee
+                using (SqlConnection connection = new SqlConnection(ConnectionString))
+                {
+                    connection.Open();
+
+                    string query = "DELETE FROM company.Employee WHERE employee_id = @id;";
+
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        //attach input
+                        command.Parameters.AddWithValue("@id", id);
+                        int r = command.ExecuteNonQuery();
+
+                        //success check
+                        if(r > 0) 
+                            Console.WriteLine("Employee deleted"); 
+                         else
+                            Console.WriteLine("Employee Id not found"); 
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
         }
 
-        static void Query()
+        static void JoinQuery()
         {
-            Console.WriteLine("Query Selected");
+            Console.WriteLine("View Event Locations (Join Query) Selected");
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(ConnectionString))
+                {
+                    connection.Open();
+
+                    //join location to event
+                    string query = @"SELECT e.event_id, e.event_name, l.building_name, l.location_address, l.us_state, l.country, l.zip_code
+                                    FROM company.Event e
+                                    JOIN company.Location l ON e.building_id = l.building_id
+                                    ORDER BY e.event_date;";
+
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            Console.WriteLine();
+
+                            //print headers
+                            Console.WriteLine($"{reader.GetName(0),-10}{reader.GetName(1),-30}{reader.GetName(2),-20}{reader.GetName(3),-25}{reader.GetName(4),-12}" +
+                                                $"{reader.GetName(5),-15}{reader.GetName(6),-6}");
+
+                            Console.WriteLine(new string('-', 125));
+
+                            //print rows
+                            while (reader.Read())
+                                Console.WriteLine($"{reader[0],-10}{reader[1],-30}{reader[2],-20}{reader[3],-25}{reader[4],-12}{reader[5],-15}{reader[6],-6}");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
 
     }
